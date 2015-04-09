@@ -59,12 +59,43 @@ public class WinnerRobot extends AdvancedRobot {
 		double adjust = (rand.nextDouble() - 0.5) * 10; // Um valor entre -5 e 5
 		setTurnRadarRight((enemyAngleFromMyself(enemy) - getRadarHeading() + 180) % 360 - 180 + adjust);
 	}
+	
+	// Mirar no inimigo sempre
+	void gunAction() {
+		// TODO: Alterar o firePower a depender da chance de acertar
+		double firePower = 2;
+		double bulletSpeed = 20 - firePower * 3;
+		
+		// Resolução de um problema dinâmico:
+		// Inicialmente assumir que o tiro vai demorar um turno para chegar no inimigo
+		EnemyKnowledge enemy = null;
+		long time = 1;
+		
+		// Repetidamente... (30 é um número arbitrário)
+		for (int i = 0; i < 30; ++i) {
+			// Calcular onde o inimigo vai estar quando o tiro chegar nele
+			enemy = predict(getTime()+time);
+			if (enemy == null) return; // não foi possível prever
+			
+			// Calcular quanto tempo vai levar para atingir onde ele vai estar
+			time = (long)(enemyDistanceFromMyself(enemy) / bulletSpeed);
+		}
+		
+		// Mirar na melhor direção para atirar
+		double shotAngle = enemyAngleFromMyself(enemy);
+		setTurnGunRight((shotAngle - getGunHeading() + 180) % 360 - 180);
+		
+		// Se já estamos bem perto dessa direção...
+		if (Math.abs(shotAngle - getGunHeading()) < 3)
+			setFire(firePower);
+	}
 
 	// Execução principal do robô. Vai chamar as funções referentes a cada
 	// componente e depois executar tudo em loop.
 	public void run() {
 		while (true) {
 			radarAction();
+			gunAction();
 			execute();
 		}
 	}
@@ -76,6 +107,13 @@ public class WinnerRobot extends AdvancedRobot {
 		double angle = Math.toDegrees(Math.atan2(dx, dy));
 		if (angle < 0) angle += 360;
 		return angle;
+	}
+	
+	// Retorna a distancia para o inimigo
+	double enemyDistanceFromMyself(EnemyKnowledge enemy) {
+		double dx = enemy.x - myself.getX();
+		double dy = enemy.y - myself.getY();
+		return Math.hypot(dx, dy);
 	}
 	
 	// Deve prever onde o inimigo vai estar no tempo dado
@@ -99,6 +137,12 @@ public class WinnerRobot extends AdvancedRobot {
 		// Assumir que não mudou de velocidade
 		enemy.speedX = last.speedX;
 		enemy.speedY = last.speedY;
+		
+		// Se estamos prevendo ele fora do ring, é porque ele vai bater em
+		// uma parede. Não sabemos o que fará depois de bater na parede :(
+		if (enemy.x < 0 || enemy.y < 0 ||
+		    enemy.x > getBattleFieldWidth() || enemy.y > getBattleFieldHeight())
+			return null;
 		
 		return enemy;
 	}
@@ -124,3 +168,4 @@ public class WinnerRobot extends AdvancedRobot {
 	}
 
 }
+
