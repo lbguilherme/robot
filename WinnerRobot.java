@@ -11,7 +11,14 @@ public class WinnerRobot extends AdvancedRobot {
 	// Dados sobre o inimigo em um dado instante de tempo
 	class EnemyKnowledge {
 		long time; // O número do turno de quando a informação foi obtida
-		double angle; // Direção absoluta
+		
+		// Vetor posição:
+		double x;
+		double y;
+		
+		// Vetor velocidade:
+		double speedX;
+		double speedY;
 	}
 
 	// Armazene uma lista das últimas N posições do inimigo
@@ -21,6 +28,9 @@ public class WinnerRobot extends AdvancedRobot {
 	// e vai descartando da outra ponta (mais antigos).
 	final int knowledgeMaxAge = 20; // Idade máxima
 	Deque<EnemyKnowledge> knowledgeDatabase = new LinkedList<EnemyKnowledge>();
+	
+	// Informação sobre o meu próprio robô no turno atual
+	RobotStatus myself;
 
 	// Toma a ação referente ao radar para o próximo turno
 	void radarAction() {
@@ -28,9 +38,12 @@ public class WinnerRobot extends AdvancedRobot {
 		// ... remova o mais antigo
 		while (knowledgeDatabase.size() > 0 && getTime() - knowledgeDatabase.peek().time > knowledgeMaxAge)
 			knowledgeDatabase.pop();
+			
+		// Prever onde o inimigo estará baseado em dados anteriores
+		EnemyKnowledge enemy = predict(getTime()+1);
 	
 		// Se não sabemos nada sobre o inimigo, girar o radar o mais rápido possível
-		if (knowledgeDatabase.size() == 0) {
+		if (enemy == null) {
 			setTurnRadarRight(32); // Bom número cálculado pela razão de ouro
 			return;
 		}
@@ -42,9 +55,9 @@ public class WinnerRobot extends AdvancedRobot {
 		// evento onScannedRobot() práticamente em todos os turnos
 		// Em meus testes, apenas 2 a cada 100 turnos não receberam o evento
 		// Isso vai manter um bom fluxo de novas informações
-		EnemyKnowledge enemy = knowledgeDatabase.peekLast();
-		double adjust = (rand.nextDouble() - 0.5) * 10;
-		setTurnRadarRight((enemy.angle - getRadarHeading() + 180) % 360 - 180 + adjust);
+		double enemyAngle = enemyAngleFromMyself(enemy);
+		double adjust = (rand.nextDouble() - 0.5) * 10; // Um valor entre -5 e 5
+		setTurnRadarRight((enemyAngleFromMyself(enemy) - getRadarHeading() + 180) % 360 - 180 + adjust);
 	}
 
 	// Execução principal do robô. Vai chamar as funções referentes a cada
@@ -56,6 +69,40 @@ public class WinnerRobot extends AdvancedRobot {
 		}
 	}
 	
+	// Retorna o angulo para onde apontar
+	double enemyAngleFromMyself(EnemyKnowledge enemy) {
+		double dx = enemy.x - myself.getX();
+		double dy = enemy.y - myself.getY();
+		double angle = Math.toDegrees(Math.atan2(dx, dy));
+		if (angle < 0) angle += 360;
+		return angle;
+	}
+	
+	// Deve prever onde o inimigo vai estar no tempo dado
+	// Chave para o sucesso :)
+	EnemyKnowledge predict(long time) {
+		// Se não temos dados do radar, não podemos prever
+		if (knowledgeDatabase.size() == 0) {
+			return null;
+		}
+		
+		EnemyKnowledge last = knowledgeDatabase.peekLast();
+		long dt = time - last.time; // Variação no tempo desde a última informação
+		
+		EnemyKnowledge enemy = new EnemyKnowledge();
+		enemy.time = time; // É como se fosse uma informação do radar do futuro
+		
+		// Assumir que foi em linha reta
+		enemy.x = last.x + last.speedX * dt;
+		enemy.y = last.y + last.speedY * dt;
+		
+		// Assumir que não mudou de velocidade
+		enemy.speedX = last.speedX;
+		enemy.speedY = last.speedY;
+		
+		return enemy;
+	}
+	
 	// Sempre que radar notar um robô, adicionar
 	// ele na lista de informações do inimigo
 	public void onScannedRobot(ScannedRobotEvent e) {
@@ -63,7 +110,17 @@ public class WinnerRobot extends AdvancedRobot {
 		knowledgeDatabase.add(enemy);
 
 		enemy.time = getTime();
-		enemy.angle = getHeading() + e.getBearing();
+		
+		double angle = getHeading() + e.getBearing();
+		enemy.x = myself.getX() + Math.sin(Math.toRadians(angle)) * e.getDistance();
+		enemy.y = myself.getY() + Math.cos(Math.toRadians(angle)) * e.getDistance();
+		enemy.speedX = Math.sin(Math.toRadians(e.getHeading())) * e.getVelocity();
+		enemy.speedY = Math.cos(Math.toRadians(e.getHeading())) * e.getVelocity();
+	}
+
+	// Em todos os turnos, obter informações sobre meu robô
+	public void onStatus(StatusEvent e) {
+		myself = e.getStatus();
 	}
 
 }
