@@ -44,7 +44,7 @@ public class WinnerRobot extends AdvancedRobot {
 		// Isso vai manter um bom fluxo de novas informações
 		EnemyKnowledge enemy = knowledgeDatabase.peekLast();
 		double adjust = (rand.nextDouble() - 0.5) * 10;
-		setTurnRadarRight(enemy.angle - getRadarHeading() + adjust);
+		setTurnRadarRight((enemy.angle - getRadarHeading() + 180) % 360 - 180 + adjust);
 	}
 
 	// Execução principal do robô. Vai chamar as funções referentes a cada
@@ -61,9 +61,9 @@ public class WinnerRobot extends AdvancedRobot {
 	public void onScannedRobot(ScannedRobotEvent e) {
 		EnemyKnowledge enemy = new EnemyKnowledge();
 		knowledgeDatabase.add(enemy);
-		
+
 		enemy.time = getTime();
 		enemy.angle = getHeading() + e.getBearing();
 	}
-	
+
 }
