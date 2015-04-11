@@ -173,12 +173,17 @@ public class WinnerRobot extends AdvancedRobot {
 	//Movimento circular do robô
 	public void circleMovement(){
 		setTurnRight(10000);
-		ahead(10000*speedFactor);
+		setAhead(10000*speedFactor);
 	}
 
 	//Muda direção ao atingir um robô inimigo
 	public void onHitRobot(HitRobotEvent e) {
-       speedFactor *= -1;
+       speedFactor = speedFactor * -1;
+   }
+	//Vai para tras ao atingir uma parede
+	 public void onHitWall(HitWallEvent event){
+   		setTurnRight(0);
+   		setBack(20000);
    }
 }
 
