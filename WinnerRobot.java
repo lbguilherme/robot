@@ -5,6 +5,8 @@ import java.util.*;
 // Nosso robô legal que vai ganhar
 public class WinnerRobot extends AdvancedRobot {
 
+	int speedFactor = 1;
+
 	// Um gerador randômico para uso geral
 	Random rand = new Random();
 
@@ -97,6 +99,7 @@ public class WinnerRobot extends AdvancedRobot {
 			radarAction();
 			gunAction();
 			execute();
+			circleMovement();
 		}
 	}
 	
@@ -167,5 +170,20 @@ public class WinnerRobot extends AdvancedRobot {
 		myself = e.getStatus();
 	}
 
+	//Movimento circular do robô
+	public void circleMovement(){
+		setTurnRight(10000);
+		setAhead(10000*speedFactor);
+	}
+
+	//Muda direção ao atingir um robô inimigo
+	public void onHitRobot(HitRobotEvent e) {
+       speedFactor = speedFactor * -1;
+   }
+	//Vai para tras ao atingir uma parede
+	 public void onHitWall(HitWallEvent event){
+   		setTurnRight(0);
+   		setBack(20000);
+   }
 }
 
