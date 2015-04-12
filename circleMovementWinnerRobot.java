@@ -170,17 +170,37 @@ public class WinnerRobot extends AdvancedRobot {
 		myself = e.getStatus();
 	}
 
-	//Movimento circular do robô
+	// Movimento circular do robô
 	public void circleMovement(){
 		setTurnRight(10000);
 		setAhead(10000*speedFactor);
 	}
 
-	//Muda direção ao atingir um robô inimigo
+	// Movimento preguiçoso do robô (se move se houver perigo)
+	public void lazyMovement() {
+		EnemyKnowledge enemy1, enemy2, enemy3;
+		Iterator iterator = knowledgeDatabase.descendingIterator();
+		enemy1 = (EnemyKnowledge) iterator.next(); // ultimo
+		enemy2 = (EnemyKnowledge) iterator.next(); // penultimo
+		enemy3 = (EnemyKnowledge) iterator.next(); // anti penultimo
+		if(abs(enemy1.x - enemy2.x) == abs(enemy2.x - enemy3.x) &&
+			abs(enemy1.y - enemy2.y) == abs(enemy2.y - enemy3.y)) {	// é uma reta
+
+			}
+		if() { // inimigo atirou
+
+		}
+	}
+
+	public float abs(float a) {
+        return (a <= 0.0F) ? 0.0F - a : a;
+    }
+
+	// Muda direção ao atingir um robô inimigo
 	public void onHitRobot(HitRobotEvent e) {
        speedFactor = speedFactor * -1;
    }
-	//Vai para tras ao atingir uma parede
+	// Vai para tras ao atingir uma parede
 	 public void onHitWall(HitWallEvent event){
    		setTurnRight(0);
    		setBack(20000);

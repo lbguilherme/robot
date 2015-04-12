@@ -6,6 +6,7 @@ import java.util.*;
 public class WinnerRobot extends AdvancedRobot {
 
 	int speedFactor = 1;
+	boolean borderSentryStatus = false;
 
 	// Um gerador randômico para uso geral
 	Random rand = new Random();
@@ -182,17 +183,19 @@ public class WinnerRobot extends AdvancedRobot {
 
 	// Movimento preguiçoso do robô (se move se houver perigo)
 	public void lazyMovement() {
-		EnemyKnowledge enemy1, enemy2, enemy3;
-		Iterator iterator = knowledgeDatabase.descendingIterator();
-		enemy1 = (EnemyKnowledge) iterator.next(); // ultimo
-		enemy2 = (EnemyKnowledge) iterator.next(); // penultimo
-		enemy3 = (EnemyKnowledge) iterator.next(); // anti penultimo
-		if(abs(abs(enemy1.x - enemy2.x) - abs(enemy2.x - enemy3.x)) < 0.1 &&
-			abs(abs(enemy1.y - enemy2.y) - abs(enemy2.y - enemy3.y)) < 0.1 ) {	// é uma reta
+		if(!borderSentryStatus) {
+			EnemyKnowledge enemy1, enemy2, enemy3;
+			Iterator iterator = knowledgeDatabase.descendingIterator();
+			enemy1 = (EnemyKnowledge) iterator.next(); // ultimo
+			enemy2 = (EnemyKnowledge) iterator.next(); // penultimo
+			enemy3 = (EnemyKnowledge) iterator.next(); // anti penultimo
+			if(abs(abs(enemy1.x - enemy2.x) - abs(enemy2.x - enemy3.x)) < 0.1 &&
+				abs(abs(enemy1.y - enemy2.y) - abs(enemy2.y - enemy3.y)) < 0.1 ) {	// é uma reta
+					double enemyAngle = enemyAngleFromMyself(enemy);
+				}
+			else if(enemy1.energy < enemy2.energy) { // inimigo atirou
 
 			}
-		if(enemy1.energy < enemy2.energy) { // inimigo atirou
-
 		}
 	}
 
