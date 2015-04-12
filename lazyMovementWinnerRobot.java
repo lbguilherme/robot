@@ -7,6 +7,7 @@ public class WinnerRobot extends AdvancedRobot {
 
 	int speedFactor = 1;
 	boolean borderSentryStatus = false;
+	int movementCount = 0;
 
 	// Um gerador randômico para uso geral
 	Random rand = new Random();
@@ -103,7 +104,7 @@ public class WinnerRobot extends AdvancedRobot {
 			radarAction();
 			gunAction();
 			execute();
-			//lazyMovement();
+			lazyMovement();
 		}
 	}
 	
@@ -186,18 +187,31 @@ public class WinnerRobot extends AdvancedRobot {
 		if(!borderSentryStatus) {
 			EnemyKnowledge enemy1, enemy2, enemy3;
 			Iterator iterator = knowledgeDatabase.descendingIterator();
-			enemy1 = (EnemyKnowledge) iterator.next(); // ultimo
-			enemy2 = (EnemyKnowledge) iterator.next(); // penultimo
-			enemy3 = (EnemyKnowledge) iterator.next(); // anti penultimo
-			if(absolute(absolute(enemy1.x - enemy2.x) - absolute(enemy2.x - enemy3.x)) < 0.1 && absolute(absolute(enemy1.y - enemy2.y) - absolute(enemy2.y - enemy3.y)) < 0.1 ) {	// é uma reta
-					double enemyAngle = enemyAngleFromMyself(enemy1);
-					setTurnLeft(90 - enemyAngle);
-					setAhead(200);
+			if (knowledgeDatabase.size() >= 3){
+				enemy1 = (EnemyKnowledge) iterator.next(); // ultimo
+				enemy2 = (EnemyKnowledge) iterator.next(); // penultimo
+				enemy3 = (EnemyKnowledge) iterator.next(); // anti penultimo
+				if(absolute(absolute(enemy1.x - enemy2.x) - absolute(enemy2.x - enemy3.x)) < 0.1 && absolute(absolute(enemy1.y - enemy2.y) - absolute(enemy2.y - enemy3.y)) < 0.1 ) {	// é uma reta
+						/*double enemyAngle = enemyAngleFromMyself(enemy1);
+						setTurnLeft(90 - enemyAngle);
+						setAhead(500);
+						setTurnLeft(-(90 - enemyAngle));
+						setAhead(-500);*/
 				}
-			else if(enemy1.energy < enemy2.energy) { // inimigo atirou
-				double enemyAngle = enemyAngleFromMyself(enemy1);
-					setTurnLeft(90 - enemyAngle);
-					setAhead(200);
+				else if (absolute(enemy1.energy - enemy2.energy) > 0.2) { // inimigo atirou
+					double enemyAngle = enemyAngleFromMyself(enemy1);
+					//setTurnLeft(90 - enemyAngle);
+					movementCount += 1;
+					if (movementCount > 5){
+						movementCount = 0;
+						setTurnRight(90);
+						setAhead(100);
+					}else{
+					setAhead(100);
+					}
+					//setTurnLeft(-(90 - enemyAngle));
+					//setAhead(-500);
+				}
 			}
 		}
 	}
@@ -212,8 +226,7 @@ public class WinnerRobot extends AdvancedRobot {
    }
 	// Vai para tras ao atingir uma parede
 	public void onHitWall(HitWallEvent event){
-   		setTurnRight(0);
-   		setBack(20000);
+   		setBack(500);
    }
 
    public double absolute(double d){
