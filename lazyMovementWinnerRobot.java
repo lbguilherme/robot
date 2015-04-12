@@ -92,7 +92,7 @@ public class WinnerRobot extends AdvancedRobot {
 		setTurnGunRight((shotAngle - getGunHeading() + 180) % 360 - 180);
 		
 		// Se já estamos bem perto dessa direção...
-		if (Math.abs(shotAngle - getGunHeading()) < 3)
+		if (absolute(shotAngle - getGunHeading()) < 3)
 			setFire(firePower);
 	}
 
@@ -103,7 +103,7 @@ public class WinnerRobot extends AdvancedRobot {
 			radarAction();
 			gunAction();
 			execute();
-			circleMovement();
+			//lazyMovement();
 		}
 	}
 	
@@ -112,7 +112,7 @@ public class WinnerRobot extends AdvancedRobot {
 		double dx = enemy.x - myself.getX();
 		double dy = enemy.y - myself.getY();
 		double angle = Math.toDegrees(Math.atan2(dx, dy));
-		if (angle < 0) angle += 360;
+		//if (angle < 0) angle += 360;
 		return angle;
 	}
 	
@@ -189,17 +189,20 @@ public class WinnerRobot extends AdvancedRobot {
 			enemy1 = (EnemyKnowledge) iterator.next(); // ultimo
 			enemy2 = (EnemyKnowledge) iterator.next(); // penultimo
 			enemy3 = (EnemyKnowledge) iterator.next(); // anti penultimo
-			if(abs(abs(enemy1.x - enemy2.x) - abs(enemy2.x - enemy3.x)) < 0.1 &&
-				abs(abs(enemy1.y - enemy2.y) - abs(enemy2.y - enemy3.y)) < 0.1 ) {	// é uma reta
-					double enemyAngle = enemyAngleFromMyself(enemy);
+			if(absolute(absolute(enemy1.x - enemy2.x) - absolute(enemy2.x - enemy3.x)) < 0.1 && absolute(absolute(enemy1.y - enemy2.y) - absolute(enemy2.y - enemy3.y)) < 0.1 ) {	// é uma reta
+					double enemyAngle = enemyAngleFromMyself(enemy1);
+					setTurnLeft(90 - enemyAngle);
+					setAhead(200);
 				}
 			else if(enemy1.energy < enemy2.energy) { // inimigo atirou
-
+				double enemyAngle = enemyAngleFromMyself(enemy1);
+					setTurnLeft(90 - enemyAngle);
+					setAhead(200);
 			}
 		}
 	}
 
-	public float abs(float a) {		// bibilioteca math cade?
+	public float absolute(float a) {		// bibilioteca math cade?
         return (a <= 0.0F) ? 0.0F - a : a;
     }
 
@@ -208,9 +211,14 @@ public class WinnerRobot extends AdvancedRobot {
        speedFactor = speedFactor * -1;
    }
 	// Vai para tras ao atingir uma parede
-	 public void onHitWall(HitWallEvent event){
+	public void onHitWall(HitWallEvent event){
    		setTurnRight(0);
    		setBack(20000);
+   }
+
+   public double absolute(double d){
+   	double abs_num = (d < 0) ? -d : d;
+   	return abs_num;
    }
 }
 
