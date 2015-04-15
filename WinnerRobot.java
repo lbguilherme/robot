@@ -6,6 +6,8 @@ import java.util.*;
 public class WinnerRobot extends AdvancedRobot {
 
 	int speedFactor = 1;
+	boolean borderSentryStatus = false;
+	int movementCount = 0;
 
 	// Um gerador randômico para uso geral
 	Random rand = new Random();
@@ -21,6 +23,9 @@ public class WinnerRobot extends AdvancedRobot {
 		// Vetor velocidade:
 		double speedX;
 		double speedY;
+
+		// Energia:
+		double energy;
 	}
 
 	// Armazene uma lista das últimas N posições do inimigo
@@ -88,7 +93,7 @@ public class WinnerRobot extends AdvancedRobot {
 		setTurnGunRight((shotAngle - getGunHeading() + 180) % 360 - 180);
 		
 		// Se já estamos bem perto dessa direção...
-		if (Math.abs(shotAngle - getGunHeading()) < 3)
+		if (absolute(shotAngle - getGunHeading()) < 3)
 			setFire(firePower);
 	}
 
@@ -99,7 +104,7 @@ public class WinnerRobot extends AdvancedRobot {
 			radarAction();
 			gunAction();
 			execute();
-			circleMovement();
+			lazyMovement();
 		}
 	}
 	
@@ -108,7 +113,7 @@ public class WinnerRobot extends AdvancedRobot {
 		double dx = enemy.x - myself.getX();
 		double dy = enemy.y - myself.getY();
 		double angle = Math.toDegrees(Math.atan2(dx, dy));
-		if (angle < 0) angle += 360;
+		//if (angle < 0) angle += 360;
 		return angle;
 	}
 	
@@ -163,6 +168,7 @@ public class WinnerRobot extends AdvancedRobot {
 		enemy.y = myself.getY() + Math.cos(Math.toRadians(angle)) * e.getDistance();
 		enemy.speedX = Math.sin(Math.toRadians(e.getHeading())) * e.getVelocity();
 		enemy.speedY = Math.cos(Math.toRadians(e.getHeading())) * e.getVelocity();
+		enemy.energy = e.getEnergy();
 	}
 
 	// Em todos os turnos, obter informações sobre meu robô
@@ -170,20 +176,62 @@ public class WinnerRobot extends AdvancedRobot {
 		myself = e.getStatus();
 	}
 
-	//Movimento circular do robô
+	// Movimento circular do robô
 	public void circleMovement(){
 		setTurnRight(10000);
 		setAhead(10000*speedFactor);
 	}
 
-	//Muda direção ao atingir um robô inimigo
+	// Movimento preguiçoso do robô (se move se houver perigo)
+	public void lazyMovement() {
+		if(!borderSentryStatus) {
+			EnemyKnowledge enemy1, enemy2, enemy3;
+			Iterator iterator = knowledgeDatabase.descendingIterator();
+			if (knowledgeDatabase.size() >= 3){
+				enemy1 = (EnemyKnowledge) iterator.next(); // ultimo
+				enemy2 = (EnemyKnowledge) iterator.next(); // penultimo
+				enemy3 = (EnemyKnowledge) iterator.next(); // anti penultimo
+				if(absolute(absolute(enemy1.x - enemy2.x) - absolute(enemy2.x - enemy3.x)) < 0.1 && absolute(absolute(enemy1.y - enemy2.y) - absolute(enemy2.y - enemy3.y)) < 0.1 ) {	// é uma reta
+						/*double enemyAngle = enemyAngleFromMyself(enemy1);
+						setTurnLeft(90 - enemyAngle);
+						setAhead(500);
+						setTurnLeft(-(90 - enemyAngle));
+						setAhead(-500);*/
+				}
+				else if (absolute(enemy1.energy - enemy2.energy) > 0.2) { // inimigo atirou
+					double enemyAngle = enemyAngleFromMyself(enemy1);
+					//setTurnLeft(90 - enemyAngle);
+					movementCount += 1;
+					if (movementCount > 5){
+						movementCount = 0;
+						setTurnRight(90);
+						setAhead(100);
+					}else{
+					setAhead(100);
+					}
+					//setTurnLeft(-(90 - enemyAngle));
+					//setAhead(-500);
+				}
+			}
+		}
+	}
+
+	public float absolute(float a) {		// bibilioteca math cade?
+        return (a <= 0.0F) ? 0.0F - a : a;
+    }
+
+	// Muda direção ao atingir um robô inimigo
 	public void onHitRobot(HitRobotEvent e) {
        speedFactor = speedFactor * -1;
    }
-	//Vai para tras ao atingir uma parede
-	 public void onHitWall(HitWallEvent event){
-   		setTurnRight(0);
-   		setBack(20000);
+	// Vai para tras ao atingir uma parede
+	public void onHitWall(HitWallEvent event){
+   		setBack(500);
+   }
+
+   public double absolute(double d){
+   	double abs_num = (d < 0) ? -d : d;
+   	return abs_num;
    }
 }
 
