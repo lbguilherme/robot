@@ -112,18 +112,16 @@ public class WinnerRobot extends AdvancedRobot {
 		setGunColor(Color.black);
 		setRadarColor(Color.black);
 
-		while (true) {
-			/*
-			addCustomEvent(new Condition("ImaginaryWallHit") {
-				public boolean test() {
-					if((getBattleFieldHeight() - myself.y) < 50 || (getBattleFieldWidth() - myself.x) < 50) {
-						out.println("Imaginry Wall Hit Condition met.");
-						return true;
-					}
-					return false;
+		addCustomEvent(new Condition("ImaginaryWallHit") {
+			public boolean test() {
+				if (myself.y < 50 || myself.x < 50 || (getBattleFieldHeight() - myself.y) < 50 || (getBattleFieldWidth() - myself.x) < 50) {
+					return true;
 				}
-			});
-			*/
+				return false;
+			}
+		});
+		
+		while (true) {
 			radarAction();
 			gunAction();
 			lazyMovement();
@@ -224,12 +222,12 @@ public class WinnerRobot extends AdvancedRobot {
 	public void onHitWall(HitWallEvent event){
    		setBack(500);
 	}
-	/*
+	
 	public void onCustomEvent(CustomEvent event){
 		if (event.getCondition().getName().equals("ImaginaryWallHit")) {
-			out.println("On Custom event rechead.");
 			setBack(400);
 		}
 	}
-	*/
+	
 }
+
