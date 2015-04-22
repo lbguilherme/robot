@@ -191,7 +191,7 @@ public class WinnerRobot extends AdvancedRobot {
 			TankInfo enemy2 = (TankInfo) iterator.next(); // penultimo
 			if (Math.abs(enemy1.energy - enemy2.energy) > 0.09) { // inimigo atirou
 				movementCount += 1;
-				if (movementCount > 5) {
+				if (movementCount > 3) {
 					movementCount = 0;
 					setTurnRight(90);
 					setAhead(100);
@@ -207,4 +207,3 @@ public class WinnerRobot extends AdvancedRobot {
    		setBack(500);
 	}
 }
-
