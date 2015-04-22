@@ -1,11 +1,13 @@
 package ufba.winners;
 import robocode.*;
 import java.util.*;
+import java.awt.*;
 
 // Nosso robô legal que vai ganhar
 public class WinnerRobot extends AdvancedRobot {
 
 	int movementCount = 0;
+	int wallevent = 0;
 
 	// Um gerador randômico para uso geral
 	Random rand = new Random();
@@ -60,7 +62,7 @@ public class WinnerRobot extends AdvancedRobot {
 		// evento onScannedRobot() práticamente em todos os turnos
 		// Em meus testes, apenas 2 a cada 100 turnos não receberam o evento
 		// Isso vai manter um bom fluxo de novas informações
-		double enemyAngle = enemyAngleFromMyself(enemy);
+		//double enemyAngle = enemyAngleFromMyself(enemy);
 		double adjust = (rand.nextDouble() - 0.5) * 10; // Um valor entre -5 e 5
 		setTurnRadarRight(fixAngle(enemyAngleFromMyself(enemy) - getRadarHeading() + adjust));
 	}
@@ -105,7 +107,23 @@ public class WinnerRobot extends AdvancedRobot {
 	// Execução principal do robô. Vai chamar as funções referentes a cada
 	// componente e depois executar tudo em loop.
 	public void run() {
+
+		setBodyColor(Color.black);
+		setGunColor(Color.black);
+		setRadarColor(Color.black);
+
 		while (true) {
+			/*
+			addCustomEvent(new Condition("ImaginaryWallHit") {
+				public boolean test() {
+					if((getBattleFieldHeight() - myself.y) < 50 || (getBattleFieldWidth() - myself.x) < 50) {
+						out.println("Imaginry Wall Hit Condition met.");
+						return true;
+					}
+					return false;
+				}
+			});
+			*/
 			radarAction();
 			gunAction();
 			lazyMovement();
@@ -206,4 +224,12 @@ public class WinnerRobot extends AdvancedRobot {
 	public void onHitWall(HitWallEvent event){
    		setBack(500);
 	}
+	/*
+	public void onCustomEvent(CustomEvent event){
+		if (event.getCondition().getName().equals("ImaginaryWallHit")) {
+			out.println("On Custom event rechead.");
+			setBack(400);
+		}
+	}
+	*/
 }
